@@ -37,6 +37,16 @@ public final class VideoPublishOptions: NSObject, TrackPublishOptions, Sendable 
 
     public let preferredBackupCodec: VideoCodec?
 
+    /// Scalability mode used when publishing with an SVC codec (VP9/AV1).
+    /// `nil` keeps the SDK defaults: `L3T3_KEY` for camera, `L1T3` for screen share.
+    /// Ignored for non-SVC codecs (VP8/H264), which use simulcast instead.
+    ///
+    /// Use `.L1T3` to publish a single spatial layer with temporal scalability — the same
+    /// configuration `livekit-client` (JS) exposes as `scalabilityMode: 'L1T3'`. Motivation:
+    /// with `L3T3_KEY` some SFU versions turn the dependency descriptor off for the track
+    /// and subscribers freeze; a single spatial layer avoids it.
+    public let scalabilityMode: ScalabilityMode?
+
     public let degradationPreference: DegradationPreference
 
     public let streamName: String?
@@ -49,6 +59,7 @@ public final class VideoPublishOptions: NSObject, TrackPublishOptions, Sendable 
                 screenShareSimulcastLayers: [VideoParameters] = [],
                 preferredCodec: VideoCodec? = nil,
                 preferredBackupCodec: VideoCodec? = nil,
+                scalabilityMode: ScalabilityMode? = nil,
                 degradationPreference: DegradationPreference = .auto,
                 streamName: String? = nil)
     {
@@ -60,6 +71,7 @@ public final class VideoPublishOptions: NSObject, TrackPublishOptions, Sendable 
         self.screenShareSimulcastLayers = screenShareSimulcastLayers
         self.preferredCodec = preferredCodec
         self.preferredBackupCodec = preferredBackupCodec
+        self.scalabilityMode = scalabilityMode
         self.degradationPreference = degradationPreference
         self.streamName = streamName
     }
@@ -76,6 +88,7 @@ public final class VideoPublishOptions: NSObject, TrackPublishOptions, Sendable 
             screenShareSimulcastLayers == other.screenShareSimulcastLayers &&
             preferredCodec == other.preferredCodec &&
             preferredBackupCodec == other.preferredBackupCodec &&
+            scalabilityMode == other.scalabilityMode &&
             degradationPreference == other.degradationPreference &&
             streamName == other.streamName
     }
@@ -90,6 +103,7 @@ public final class VideoPublishOptions: NSObject, TrackPublishOptions, Sendable 
         hasher.combine(screenShareSimulcastLayers)
         hasher.combine(preferredCodec)
         hasher.combine(preferredBackupCodec)
+        hasher.combine(scalabilityMode)
         hasher.combine(degradationPreference)
         hasher.combine(streamName)
         return hasher.finalize()

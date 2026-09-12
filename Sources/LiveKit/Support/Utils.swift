@@ -313,9 +313,12 @@ class Utils: Loggable {
 
         if let videoCodec, videoCodec.isSVC {
             // SVC mode
-            log("Using SVC mode")
-            // VP9/AV1 with screen sharing requires single spatial layer
-            return [RTC.createRtpEncodingParameters(encoding: encoding, scalabilityMode: isScreenShare ? .L1T3 : .L3T3_KEY)]
+            // VP9/AV1 with screen sharing requires single spatial layer.
+            // An explicit `publishOptions.scalabilityMode` wins over the defaults (parity with
+            // livekit-client `scalabilityMode`).
+            let scalabilityMode = publishOptions.scalabilityMode ?? (isScreenShare ? .L1T3 : .L3T3_KEY)
+            log("Using SVC mode, scalabilityMode: \(scalabilityMode)")
+            return [RTC.createRtpEncodingParameters(encoding: encoding, scalabilityMode: scalabilityMode)]
         } else if !publishOptions.simulcast {
             // Not-simulcast mode
             log("Simulcast not enabled")
