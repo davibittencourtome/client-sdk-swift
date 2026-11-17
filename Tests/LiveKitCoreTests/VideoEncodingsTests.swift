@@ -35,10 +35,10 @@ struct VideoEncodingsTests {
         let backup = Utils.computeVideoEncodings(dimensions: dimensions,
                                                  publishOptions: Self.options,
                                                  isScreenShare: true,
-                                                 overrideVideoCodec: .h264)
+                                                 overrideVideoCodec: .h264, serverVersion: nil)
         let primary = Utils.computeVideoEncodings(dimensions: dimensions,
                                                   publishOptions: Self.options,
-                                                  isScreenShare: true)
+                                                  isScreenShare: true, serverVersion: nil)
 
         try #require(backup.count == 1)
         #expect(backup[0].maxBitrateBps?.intValue == 4_000_000)
@@ -51,7 +51,7 @@ struct VideoEncodingsTests {
     @Test func omittingScreenShareFlagSelectsCameraEncoding() throws {
         let camera = Utils.computeVideoEncodings(dimensions: Dimensions(width: 1920, height: 1080),
                                                  publishOptions: Self.options,
-                                                 overrideVideoCodec: .h264)
+                                                 overrideVideoCodec: .h264, serverVersion: nil)
 
         try #require(camera.count == 1)
         #expect(camera[0].maxBitrateBps?.intValue == 1_000_000)

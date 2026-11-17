@@ -22,7 +22,7 @@ struct VideoEncodingsScalabilityModeTests {
 
     @Test func svcDefaultsToL3T3KeyForCamera() {
         let encodings = Utils.computeVideoEncodings(dimensions: dimensions,
-                                                    publishOptions: VideoPublishOptions(preferredCodec: .vp9))
+                                                    publishOptions: VideoPublishOptions(preferredCodec: .vp9), serverVersion: nil)
         #expect(encodings.count == 1)
         #expect(encodings[0].scalabilityMode == "L3T3_KEY")
     }
@@ -30,14 +30,14 @@ struct VideoEncodingsScalabilityModeTests {
     @Test func svcDefaultsToL1T3ForScreenShare() {
         let encodings = Utils.computeVideoEncodings(dimensions: dimensions,
                                                     publishOptions: VideoPublishOptions(preferredCodec: .vp9),
-                                                    isScreenShare: true)
+                                                    isScreenShare: true, serverVersion: nil)
         #expect(encodings.count == 1)
         #expect(encodings[0].scalabilityMode == "L1T3")
     }
 
     @Test func explicitScalabilityModeWinsForSvcCamera() {
         let options = VideoPublishOptions(preferredCodec: .vp9, scalabilityMode: .L1T3)
-        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: options)
+        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: options, serverVersion: nil)
         #expect(encodings.count == 1)
         #expect(encodings[0].scalabilityMode == "L1T3")
     }
@@ -48,7 +48,7 @@ struct VideoEncodingsScalabilityModeTests {
         let options = VideoPublishOptions(preferredCodec: .vp9, scalabilityMode: .L1T3)
         let encodings = Utils.computeVideoEncodings(dimensions: dimensions,
                                                     publishOptions: options,
-                                                    overrideVideoCodec: .av1)
+                                                    overrideVideoCodec: .av1, serverVersion: nil)
         #expect(encodings.count == 1)
         #expect(encodings[0].scalabilityMode == "L1T3")
     }
@@ -60,14 +60,14 @@ struct VideoEncodingsScalabilityModeTests {
         let options = VideoPublishOptions(preferredCodec: .vp9, scalabilityMode: .L3T3_KEY)
         let encodings = Utils.computeVideoEncodings(dimensions: dimensions,
                                                     publishOptions: options,
-                                                    isScreenShare: true)
+                                                    isScreenShare: true, serverVersion: nil)
         #expect(encodings.count == 1)
         #expect(encodings[0].scalabilityMode == "L1T3")
     }
 
     @Test func scalabilityModeIsIgnoredForNonSvcCodec() {
         let options = VideoPublishOptions(preferredCodec: .vp8, scalabilityMode: .L1T3)
-        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: options)
+        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: options, serverVersion: nil)
         #expect(encodings.count > 1)
         #expect(encodings.allSatisfy { $0.scalabilityMode == nil })
     }
@@ -77,7 +77,7 @@ struct VideoEncodingsScalabilityModeTests {
     @Test func legacyInitializerDefaultsScalabilityModeToNil() {
         let legacy = VideoPublishOptions(preferredCodec: .vp9, degradationPreference: .auto)
         #expect(legacy.scalabilityMode == nil)
-        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: legacy)
+        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: legacy, serverVersion: nil)
         #expect(encodings[0].scalabilityMode == "L3T3_KEY")
     }
 

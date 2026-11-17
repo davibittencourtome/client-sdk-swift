@@ -53,12 +53,17 @@ extension Utils {
         return encodings.allSatisfy { ($0.rid ?? "").isEmpty }
     }
 
+    /// - Parameter serverVersion: version of the connected server (`Room.serverVersion`), which decides
+    ///   whether VP9/AV1 may be published as rid based simulcast. Deliberately without a default: a
+    ///   call site that forgets it silently computes SVC encodings, and one that recomputes the sender
+    ///   parameters of a simulcast track that way strips the scale of every layer, so libwebrtc falls
+    ///   back to a single full resolution stream.
     static func computeVideoEncodings(
         dimensions: Dimensions,
         publishOptions: VideoPublishOptions?,
         isScreenShare: Bool = false,
         overrideVideoCodec: VideoCodec? = nil,
-        serverVersion: String? = nil,
+        serverVersion: String?,
     ) -> [LKRTCRtpEncodingParameters] {
         let publishOptions = publishOptions ?? VideoPublishOptions()
         let preferredEncoding: VideoEncoding? = isScreenShare ? publishOptions.screenShareEncoding : publishOptions.encoding

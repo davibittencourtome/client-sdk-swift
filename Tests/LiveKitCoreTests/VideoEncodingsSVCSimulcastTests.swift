@@ -55,7 +55,7 @@ struct VideoEncodingsSVCSimulcastTests {
     }
 
     @Test func keepsSVCWhenServerVersionIsUnknown() {
-        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: l1t3Simulcast)
+        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: l1t3Simulcast, serverVersion: nil)
         #expect(encodings.count == 1)
         #expect(encodings[0].scalabilityMode == "L1T3")
     }

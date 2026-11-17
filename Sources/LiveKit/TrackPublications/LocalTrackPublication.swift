@@ -187,9 +187,12 @@ extension LocalTrackPublication {
         let publishOptions = (track.publishOptions as? VideoPublishOptions) ?? room._state.roomOptions.defaultVideoPublishOptions
 
         // re-compute encodings
+        // Same server version as the publish: VP9/AV1 published as simulcast must recompute as
+        // simulcast, or every layer loses its rid match and libwebrtc collapses to one stream.
         let encodings = Utils.computeVideoEncodings(dimensions: dimensions,
                                                     publishOptions: publishOptions,
-                                                    isScreenShare: track.source == .screenShareVideo)
+                                                    isScreenShare: track.source == .screenShareVideo,
+                                                    serverVersion: room.serverVersion)
 
         log("Computed encodings: \(encodings)")
 
