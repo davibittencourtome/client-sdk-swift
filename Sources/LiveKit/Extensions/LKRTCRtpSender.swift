@@ -41,9 +41,10 @@ extension LKRTCRtpSender: Loggable {
 
         var didUpdate = false
 
-        // For SVC mode...
-        if let firstEncoding = encodings.first,
-           ScalabilityMode.fromString(firstEncoding.scalabilityMode) != nil
+        // For SVC mode (a single encoding without rid). VP9/AV1 published as rid based
+        // simulcast also carry a scalabilityMode, but are paused per layer below.
+        if Utils.isSVC(encodings: encodings),
+           let firstEncoding = encodings.first
         {
             let _enabled = qualities.highest != .off
             if firstEncoding.isActive != _enabled {

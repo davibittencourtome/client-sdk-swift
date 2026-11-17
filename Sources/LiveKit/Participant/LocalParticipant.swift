@@ -629,7 +629,9 @@ extension LocalParticipant {
         let dimensions = try await track.capturer.dimensionsCompleter.wait()
 
         let isScreenShare = track.source == .screenShareVideo
-        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: publishOptions, isScreenShare: isScreenShare, overrideVideoCodec: videoCodec)
+        // Backup codecs (VP8/H264) are never SVC, so the server version only matters for consistency.
+        let encodings = Utils.computeVideoEncodings(dimensions: dimensions, publishOptions: publishOptions, isScreenShare: isScreenShare,
+                                                    overrideVideoCodec: videoCodec, serverVersion: room.serverVersion)
 
         log("[Publish/Backup] Using encodings: \(encodings.map { $0.toDebugString() }.joined(separator: ", "))")
 
@@ -790,9 +792,28 @@ extension LocalParticipant {
 
                 publishName = videoPublishOptions.name
 
+                let serverVersion = room.serverVersion
+                // VP9/AV1 can also be published as rid based simulcast, one spatial layer per
+                // stream, so the server has smaller versions for subscribers with little bandwidth.
+                let svcSimulcast = Utils.isSVCSimulcast(videoCodec: videoPublishOptions.preferredCodec,
+                                                        publishOptions: videoPublishOptions,
+                                                        isScreenShare: track.source == .screenShareVideo,
+                                                        serverVersion: serverVersion)
+                if let preferredCodec = videoPublishOptions.preferredCodec, preferredCodec.isSVC,
+                   track.source != .screenShareVideo, videoPublishOptions.simulcast,
+                   let scalabilityMode = videoPublishOptions.scalabilityMode, scalabilityMode.spatial == 1
+                {
+                    if svcSimulcast {
+                        log("[publish] Publishing \(preferredCodec.name) as simulcast (\(scalabilityMode) per layer), server \(serverVersion ?? "unknown")", .info)
+                    } else {
+                        log("[publish] SVC simulcast is not supported by server \(serverVersion ?? "unknown"), publishing \(preferredCodec.name) as SVC (\(scalabilityMode))", .info)
+                    }
+                }
+
                 let encodings = Utils.computeVideoEncodings(dimensions: dimensions,
                                                             publishOptions: videoPublishOptions,
-                                                            isScreenShare: track.source == .screenShareVideo)
+                                                            isScreenShare: track.source == .screenShareVideo,
+                                                            serverVersion: serverVersion)
 
                 log("[publish] Using encodings: \(encodings.map { $0.toDebugString() }.joined(separator: ", "))")
                 sendEncodings = encodings
@@ -807,6 +828,9 @@ extension LocalParticipant {
                             $0.cid = track.mediaTrack.trackId
                             if let preferredCodec = videoPublishOptions.preferredCodec {
                                 $0.codec = preferredCodec.name
+                            }
+                            if svcSimulcast {
+                                $0.videoLayerMode = .oneSpatialLayerPerStream
                             }
                         },
                     ]

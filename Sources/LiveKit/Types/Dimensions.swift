@@ -151,7 +151,9 @@ extension Dimensions {
     }
 
     func videoLayers(for encodings: [LKRTCRtpEncodingParameters]) -> [Livekit_VideoLayer] {
-        if let firstEncoding = encodings.first,
+        // SVC only: VP9/AV1 published as rid based simulcast are reported per layer below.
+        if Utils.isSVC(encodings: encodings),
+           let firstEncoding = encodings.first,
            let scalabilityMode = ScalabilityMode.fromString(firstEncoding.scalabilityMode)
         {
             (0 ... (scalabilityMode.spatial - 1)).map { idx in
